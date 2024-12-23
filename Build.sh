@@ -1,6 +1,4 @@
-#  Run this to configure kernel before building
-#  ncurses package is required for this
-#  Copyright (C) 2025 AnmiTali - VerveOS
+#!/bin/sh
 
 ask_question() {
   while true; do
@@ -22,36 +20,48 @@ ask_question() {
 
 clear
 echo "Setting up environment..."
-export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
+export ARCH=arm64
 
-if ask_question "Do you want to use Clang (LLVM) for compiling?"; then
-    export CC=clang
-    export LD=ld.lld
-    export AR=llvm-ar
-    export NM=llvm-nm
-    export OBJCOPY=llvm-objcopy
-    export OBJDUMP=llvm-objdump
-    export STRIP=llvm-strip
+if ! command -v make >/dev/null; then
+  echo "Error: 'make' is not installed. Please install it and try again."
+  exit 1
 fi
 
-if ask_question "Do you want to configure kernel?"; then
-    make menuconfig
-    if ask_question "Do you want to build kernel for now?"; then
-        clear
-        make -j$(nproc)
-    fi
+if ! command -v clang >/dev/null && ask_question "Do you want to use Clang (LLVM) for compiling?"; then
+  echo "Error: Clang is not installed. Still using GCC."
 else
-    echo "Without configuring kernel you can't continue."
+  export KBUILD_BUILD_TIMESTAMP=''
+  export CXX="ccache clang++"
+  export CC="ccache clang"
+  export LLVM_IAS=1
+  export LLVM=1
 fi
 
+if ask_question "Do you want to configure the kernel?"; then
+  if ! command -v dialog >/dev/null && ! command -v whiptail >/dev/null; then
+    echo "Error: 'ncurses' package is required for menuconfig. Please install it and try again."
+    exit 1
+  fi
+
+  make menuconfig || { echo "Kernel configuration failed!"; exit 1; }
+
+  if ask_question "Do you want to build the kernel now?"; then
+    clear
+    echo "Building kernel..."
+    make -j$(nproc) || { echo "Kernel build failed!"; exit 1; }
+    echo "Kernel build complete!"
+  fi
+else
+  echo "Without configuring the kernel, you can't continue. Exiting."
+  exit 1
+fi
+
+# Clear environment variables
 echo "Clearing environment..."
-unset CC
-unset LD
-unset AR
-unset NM
-unset OBJCOPY
-unset OBJDUMP
-unset STRIP
-unset ARCH
 unset CROSS_COMPILE
+unset LLVM_IAS
+unset LLVM
+unset ARCH
+unset CC
+unset CXX

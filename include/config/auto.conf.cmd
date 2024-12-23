@@ -1570,22 +1570,25 @@ endif
 ifneq "$(KERNELVERSION)" "6.8.0"
 include/config/auto.conf: FORCE
 endif
-ifneq "$(CC)" "aarch64-linux-gnu-gcc"
+ifneq "$(CC)" "clang"
 include/config/auto.conf: FORCE
 endif
-ifneq "$(LD)" "aarch64-linux-gnu-ld"
+ifneq "$(LD)" "ld.lld"
 include/config/auto.conf: FORCE
 endif
 ifneq "$(srctree)" "."
 include/config/auto.conf: FORCE
 endif
-ifneq "$(CC_VERSION_TEXT)" "aarch64-linux-gnu-gcc (GCC) 14.2.0"
+ifneq "$(CLANG_FLAGS)" "--target=aarch64-linux-gnu -fintegrated-as -Werror=unknown-warning-option -Werror=ignored-optimization-argument -Werror=option-ignored -Werror=unused-command-line-argument"
 include/config/auto.conf: FORCE
 endif
-ifneq "$(NM)" "aarch64-linux-gnu-nm"
+ifneq "$(CC_VERSION_TEXT)" "clang version 18.1.8"
 include/config/auto.conf: FORCE
 endif
-ifneq "$(OBJCOPY)" "aarch64-linux-gnu-objcopy"
+ifneq "$(NM)" "llvm-nm"
+include/config/auto.conf: FORCE
+endif
+ifneq "$(OBJCOPY)" "llvm-objcopy"
 include/config/auto.conf: FORCE
 endif
 ifneq "$(PAHOLE)" "pahole"
@@ -1600,7 +1603,7 @@ endif
 ifneq "$(SRCARCH)" "arm64"
 include/config/auto.conf: FORCE
 endif
-ifneq "$(AR)" "aarch64-linux-gnu-ar"
+ifneq "$(AR)" "llvm-ar"
 include/config/auto.conf: FORCE
 endif
 

@@ -11,6 +11,5 @@ It's recommended to use Clang/LLVM with optimizations for compiling kernel.<br>
 You need to run special shell script for this, just write this command:
 ```sh
 ~~VerveOS~~/Scripts/BuildKernel.sh
-<br>
 ```
 This script will setup environment and build kernel.

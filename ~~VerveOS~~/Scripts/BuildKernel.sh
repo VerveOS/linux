@@ -36,7 +36,7 @@ fi
 
 echo "Checking for Clang..."
 if ! command -v clang >/dev/null && ask_question "Do you want to use Clang (LLVM) for compiling?"; then
-  echo "Error: Clang is not installed. Still using GCC."
+  echo "Error: 'clang' is not installed. Still using GCC."
 else
   export KBUILD_BUILD_TIMESTAMP=''
   export CXX="ccache clang++"
@@ -47,11 +47,11 @@ fi
 
 echo "Checking for ccache..."
 if ! command -v ccache >/dev/null; then
-  echo "Error: ccache is not installed. Please install it and try again."
+  echo "Error: 'ccache' is not installed. Please install it and try again."
   exit 1
 fi
 
-if ask_question "Enable Clang (LLVM) or GCC compilation optimization?"; then
+if ask_question "Enable Clang/LLVM or GCC compilation optimization?"; then
   export KBUILD_CFLAGS="-O3"
 fi
 
@@ -64,10 +64,17 @@ if ask_question "Do you want to configure the kernel?"; then
   make menuconfig || { echo "Kernel configuration failed!"; exit 1; }
 
   if ask_question "Do you want to build the kernel now?"; then
-    clear
-    echo "Building kernel..."
-    make -j$(nproc) || { echo "Kernel build failed!"; exit 1; }
-    echo "Kernel build complete!"
+    while true; do
+      clear
+      echo "Building kernel..."
+      make -j$(nproc) || {
+        echo "Kernel build failed!";
+        if ! ask_question "Try again?"; then
+          break
+        fi
+      }
+      echo "Kernel build complete!"
+    done
   fi
 else
   echo "Without configuring the kernel, you can't continue. Exiting."
@@ -82,5 +89,5 @@ unset CROSS_COMPILE
 unset LLVM_IAS
 unset LLVM
 unset ARCH
-unset CC
 unset CXX
+unset CC
